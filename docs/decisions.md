@@ -107,3 +107,29 @@ This document records key implementation choices and domain modeling decisions m
   - Profile updates are protected by server-side actor verification: `actorUserId === targetUserId`. A user can only modify their own profile attributes.
   - Username uniqueness is checked before mutation and protected by database unique constraints.
 
+---
+
+## 9. Phase 3 — Trusted Connections & Social Graph Architecture
+
+- **Decision 1: Username as Primary Discovery Identifier**:
+  - User discovery is strictly username-based (`@username` or `username`), case-normalized and stripped of leading `@`.
+  - Display names are non-unique and therefore not used for deterministic user resolution.
+  - Public search projects only minimal discovery attributes (`id`, `username`, `displayName`, `avatarUrl`, `connectionState`), never leaking emails, account timestamps, or auth identifiers.
+- **Decision 2: Explicit Recipient Acceptance (No Inferred Relationships)**:
+  - Been-There explicitly rejects inferred connections from email contacts, phone contacts, address books, location co-presence, or social network followings (Instagram, Facebook).
+  - A relationship starts as `PENDING` when requested by User A and becomes active if and only if User B explicitly accepts it.
+- **Decision 3: Only ACCEPTED Relationships Participate in the Trusted Graph**:
+  - `ConnectionsService.getAcceptedConnectionIds` strictly filters on `status = 'ACCEPTED'`.
+  - `PENDING`, `REJECTED`, and `REMOVED` relationships never participate in the trust graph, privacy evaluation (`canViewerAccessActivity`), or aggregate evidence calculations.
+- **Decision 4: Bidirectional Pair Integrity & Re-Connection Semantics**:
+  - Preserves the PostgreSQL functional unique index on `(LEAST(requester_id, recipient_id), GREATEST(requester_id, recipient_id))`.
+  - When re-requesting a connection after a previous `REMOVED` or `REJECTED` state, the existing row is updated to `PENDING` rather than inserting a duplicate row, preventing unique index collisions.
+- **Decision 5: Connection Graph Privacy**:
+  - Connection graphs are strictly private between participants.
+  - No public follower counts, connection counters, or third-party relationship discovery endpoints are exposed.
+- **Decision 6: Contact/Social Imports Excluded from MVP**:
+  - Contact synchronization, phone-number discovery, OAuth friend imports, and recommendation algorithms ("people you may know") are intentionally excluded to protect consumer trust and maintain architectural focus.
+- **Decision 7: No Dedicated Notification Infrastructure in Phase 3**:
+  - Incoming requests are surfaced dynamically via polling/view queries (`/api/connections/requests`). Push notifications, email digests, and websockets are deferred to avoid introducing external messaging broker dependencies.
+
+

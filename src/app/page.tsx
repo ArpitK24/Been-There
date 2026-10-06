@@ -1,9 +1,14 @@
 import React from 'react';
 import Link from 'next/link';
 import { PlaceSearchInput } from '@/components/domain/places';
-import { Users, Repeat, ShieldCheck, Compass } from 'lucide-react';
+import { getAuthSession } from '@/lib/auth';
+import { Users, Repeat, ShieldCheck, Compass, User } from 'lucide-react';
 
-export default function HomePage() {
+export const dynamic = 'force-dynamic';
+
+export default async function HomePage() {
+  const session = await getAuthSession();
+
   return (
     <div className="min-h-screen flex flex-col justify-between">
       {/* Navigation Header */}
@@ -17,18 +22,39 @@ export default function HomePage() {
           </Link>
 
           <nav className="flex items-center gap-3">
-            <Link
-              href="/login"
-              className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors px-3 py-1.5"
-            >
-              Sign in
-            </Link>
-            <Link
-              href="/signup"
-              className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl transition-colors"
-            >
-              Create account
-            </Link>
+            {session ? (
+              <>
+                <Link
+                  href="/people"
+                  className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-300 dark:hover:text-zinc-100 transition-colors px-3 py-1.5 flex items-center gap-1.5"
+                >
+                  <Users className="h-3.5 w-3.5" />
+                  People
+                </Link>
+                <Link
+                  href="/profile"
+                  className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl transition-colors flex items-center gap-1.5"
+                >
+                  <User className="h-3.5 w-3.5" />
+                  @{session.username}
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  href="/login"
+                  className="text-xs font-semibold text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100 transition-colors px-3 py-1.5"
+                >
+                  Sign in
+                </Link>
+                <Link
+                  href="/signup"
+                  className="text-xs font-semibold bg-emerald-600 hover:bg-emerald-700 text-white px-3.5 py-1.5 rounded-xl transition-colors"
+                >
+                  Create account
+                </Link>
+              </>
+            )}
           </nav>
         </div>
       </header>

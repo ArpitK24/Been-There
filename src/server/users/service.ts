@@ -1,9 +1,56 @@
 import { db, users } from '@/lib/db';
-import { User } from '@/lib/types';
+import { User, ConnectedUserProfile } from '@/lib/types';
 import { UpdateProfileInput } from '@/lib/validation';
 import { eq, and, ne, sql } from 'drizzle-orm';
 
 export class UsersService {
+  /**
+   * Search users by username for discovery.
+   * Enforces:
+   * - Strips leading '@' and lowercases input
+   * - Excludes the searching user (no self-discovery)
+   * - Prohibits leaking email, timestamps, or private fields
+   * - Bounded result set (max 20)
+   */
+  static async searchByUsername(
+    viewerId: string,
+    query: string,
+    limit = 10
+  ): Promise<ConnectedUserProfile[]> {
+    const cleanQuery = query.trim().replace(/^@/, '').toLowerCase();
+    if (!cleanQuery || cleanQuery.length < 1) {
+      return [];
+    }
+
+    const boundedLimit = Math.min(Math.max(limit, 1), 20);
+
+    const results = await db
+      .select({
+        id: users.id,
+        username: users.username,
+        displayName: users.displayName,
+        avatarUrl: users.avatarUrl,
+      })
+      .from(users)
+      .where(
+        and(
+          ne(users.id, viewerId),
+          sql`LOWER(${users.username}) LIKE ${'%' + cleanQuery + '%'}`
+        )
+      )
+      .orderBy(
+        sql`CASE 
+          WHEN LOWER(${users.username}) = ${cleanQuery} THEN 0
+          WHEN LOWER(${users.username}) LIKE ${cleanQuery + '%'} THEN 1
+          ELSE 2
+        END`,
+        users.username
+      )
+      .limit(boundedLimit);
+
+    return results;
+  }
+
   /**
    * Retrieve user profile by internal UUID.
    */

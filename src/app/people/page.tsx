@@ -2,12 +2,13 @@ import React from 'react';
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { getAuthSession } from '@/lib/auth';
-import { ProfileView } from '@/components/domain/profile';
-import { Compass } from 'lucide-react';
+import { ConnectionsService } from '@/server/connections';
+import { PeopleView } from '@/components/domain/people';
+import { Compass, Users, User } from 'lucide-react';
 
 export const dynamic = 'force-dynamic';
 
-export default async function ProfilePage() {
+export default async function PeoplePage() {
   const session = await getAuthSession();
 
   // 1. Unauthenticated -> redirect to login
@@ -19,6 +20,11 @@ export default async function ProfilePage() {
   if (!session.isEmailVerified) {
     redirect(`/verify-email?email=${encodeURIComponent(session.email)}`);
   }
+
+  const [initialConnections, initialRequests] = await Promise.all([
+    ConnectionsService.getAcceptedConnections(session.id),
+    ConnectionsService.getIncomingPendingRequests(session.id),
+  ]);
 
   return (
     <div className="min-h-screen flex flex-col justify-between bg-zinc-50 dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100">
@@ -40,35 +46,31 @@ export default async function ProfilePage() {
             </Link>
             <Link
               href="/people"
-              className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition-colors"
+              className="text-xs font-semibold text-emerald-600 dark:text-emerald-400 flex items-center gap-1.5 transition-colors"
             >
+              <Users className="h-3.5 w-3.5" />
               People
             </Link>
-            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 text-xs font-semibold border border-emerald-200/50 dark:border-emerald-800/40">
-              <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              <span>Verified Account</span>
-            </div>
+            <Link
+              href="/profile"
+              className="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 flex items-center gap-1.5 transition-colors"
+            >
+              <User className="h-3.5 w-3.5" />
+              Profile
+            </Link>
           </nav>
         </div>
       </header>
 
-      <main className="flex-1 max-w-4xl mx-auto px-4 sm:px-6 py-10 w-full">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight">Your Profile</h1>
-          <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-            Manage your personal profile and account credentials.
-          </p>
-        </div>
-
-        <ProfileView
-          initialProfile={session}
-          email={session.email}
-          isEmailVerified={session.isEmailVerified}
+      <main className="flex-1 w-full">
+        <PeopleView
+          initialConnections={initialConnections}
+          initialRequests={initialRequests}
         />
       </main>
 
-      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-400">
-        Been-There — Know who&apos;s been there before you.
+      <footer className="border-t border-zinc-200 dark:border-zinc-800 py-6 text-center text-xs text-zinc-500">
+        <p>Been-There &mdash; Know who&apos;s been there before you.</p>
       </footer>
     </div>
   );

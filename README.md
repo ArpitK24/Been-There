@@ -106,6 +106,18 @@ Open [http://localhost:3000](http://localhost:3000) in your browser:
 - **/login**: Sign in with email and password.
 - **/verify-email**: Verification status screen with link resend functionality.
 - **/profile**: Authenticated & verified user profile management.
+- **/people**: Manage trusted connections ("Your People"), review incoming requests, and discover users by `@username`.
+
+### 6. Phase 3 — Trusted Connections & Social Graph
+
+Been-There connects people through explicit, two-way consent:
+- **Discover**: Find users by `@username` via `GET /api/users/search?username=...`
+- **Request**: Send connection requests via `POST /api/connections`
+- **Review**: View incoming pending requests via `GET /api/connections/requests`
+- **Accept / Decline**: Respond to requests via `PATCH /api/connections/:id`
+- **Cancel**: Revert outgoing pending requests via `DELETE /api/connections/:id`
+- **Manage**: View trusted connections via `GET /api/connections` and remove via `DELETE /api/connections/:id`
+- **Privacy Guarantee**: Connection graphs are private to participants. Only `ACCEPTED` connections are included in the trust graph layer.
 
 ---
 
