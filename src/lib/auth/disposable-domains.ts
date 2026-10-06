@@ -1,0 +1,40 @@
+/**
+ * Curated list of known disposable and temporary email domains.
+ * Note: This list targets known disposable providers, not all temporary emails.
+ * Maintained in a central location for maintainability and extensibility.
+ */
+export const DISPOSABLE_EMAIL_DOMAINS: ReadonlySet<string> = new Set([
+  '10minutemail.com',
+  '10minutemail.net',
+  'burnermail.io',
+  'disposablemail.com',
+  'dispostable.com',
+  'dropmail.me',
+  'fakeinbox.com',
+  'getairmail.com',
+  'guerrillamail.biz',
+  'guerrillamail.block',
+  'guerrillamail.com',
+  'guerrillamail.de',
+  'guerrillamail.net',
+  'guerrillamail.org',
+  'guerrillamailblock.com',
+  'mailcatch.com',
+  'maildrop.cc',
+  'mailinator.com',
+  'mailinator.net',
+  'mailinator2.com',
+  'mohmal.com',
+  'nada.ltd',
+  'sharklasers.com',
+  'spam4.me',
+  'temp-mail.org',
+  'tempmail.com',
+  'tempmail.net',
+  'throwawaymail.com',
+  'trashmail.com',
+  'trashmail.net',
+  'yopmail.com',
+  'yopmail.fr',
+  'yopmail.net',
+]);
